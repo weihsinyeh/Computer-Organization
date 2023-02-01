@@ -1,2 +1,0 @@
-# ChengKungUniversity
-ComputerOrganization
