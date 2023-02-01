@@ -1,0 +1,78 @@
+module SME(clk,reset,chardata,isstring,ispattern,valid,match,match_index);
+	input clk;
+	input reset;
+	input [7:0] chardata;
+	input isstring;
+	input ispattern;
+	output reg match;
+	output reg [4:0] match_index;
+	output valid;
+	// reg match;
+	// reg [4:0] match_index;
+	// reg valid;
+	reg [7:0] sc;
+	reg [31:0] ss;
+	reg [4:0] i;
+	reg [7:0] find;
+	initial
+		begin
+			i <= 5'b00000;
+			find <= 8'b00000000;
+		end
+	always@(posedge ispattern)
+		begin
+			sc <= chardata;
+			if(sc[0] == "^") //比對開頭
+			begin
+				for(i = 5'b00000;i <= 5'b11111;i=i+5'b00001) //0-31
+				begin
+					if(sc[i] == ss[i-1] )
+					begin
+						if(find == 8'b00000000)
+						begin
+							match_index = i;
+						end
+						find = find + 1'b00000001;
+					end
+					else
+					begin
+						find = 1'b1;
+					end
+				end
+				match = 1'b1;
+			end
+			else            //不是比對開頭的
+			begin
+				for(i = 5'b0000;i <= 5'b11111;i=i+5'b00001) //0-31
+				begin
+					if(sc[i] == ss[i] || ss[i] == ".")
+					begin
+						if(find == 8'b00000000)
+						begin
+							match_index = i;
+						end
+						find = find + 1'b00000001;
+					end
+					else
+					begin
+						if(sc[i] == "$")
+						begin
+							if(find == i-match_index)	
+							begin
+								match = 1'b1;
+							end
+							find = find + 1'b00000001;
+						end
+						else
+						begin
+							find = 8'b00000000;
+						end
+					end
+				end
+			end	
+		end
+		always@(posedge isstring)
+		begin
+		  ss<=chardata;
+		end
+endmodule
